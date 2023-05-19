@@ -1,8 +1,7 @@
 
-<?php 
-
-    $pseudo = $_POST['pseudo'] ;
-        if(isset($_POST['send'])){
+   <?php
+        if( isset($_POST['pseudo']) && isset($_POST['send'])){
+            $pseudo = $_POST['pseudo'] ;
 
             if($_FILES['monfichier']['error'] == 0){
 
@@ -66,11 +65,16 @@
 <body>
     <div class="main-content">
        <div class="profil">
-            <p class="imageProfil"><img src="<?php if(isset($cheminDefinitif)){
-                echo ($cheminDefinitif);
-            } ?>" alt=""></p>
+            <p class="imageProfil">
+                <img src="<?php
+                if(isset($cheminDefinitif)){
+                    echo ($cheminDefinitif);
+                }else{
+                    echo ("ImageDefaut/iconDefault.png");
+                } ?>" alt="">
+            </p>
 
-            <p class="name">
+            <p class="name" id="afficherpseudo">
                 <?php if(isset($_POST['pseudo'])){
                     echo $_POST['pseudo'] ;
                 }?>
