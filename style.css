@@ -15,6 +15,17 @@ html{
     /*border: 1px solid black;*/
     flex-direction: column;
 }
+.confirmation-bdd{
+    background-color: greenyellow;
+    color: white;
+    position: absolute;
+    top: 10px;
+    left: 40%;
+    height: 20px;
+    padding: 5px;
+    border-radius: 5px;
+    display: none;
+}
 .profil{
     border: 1px solid orangered;
     background-color: blueviolet;
@@ -44,11 +55,16 @@ html{
     font-size: xx-large;
 }
 
-img{
+.main-imageProfil{
     height: 300px;
     width: 300px;
     border-radius: 50%;
     border: 5px solid blueviolet;
+    /*display: block;*/
+
+}
+#second-image{
+    display: none;
 }
 
 form{
