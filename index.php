@@ -1,7 +1,19 @@
     <?php include("database/config.php"); ?>
+    <script>
+        let resultatSauvegardeJS = false ; // Variable permettant de confirmer ou d'infirmer la sauvegarde des données dans la base de données
+        let presencePseudoJS = false ; // Variable permettant de vérifier si le pseudo entré par l'utilisateur existe déjà dans la base de données ou non
+        let afficheConfirmation = document.getElementById("confirmationBdd"); // Récupération de l'ID de la barre de notification
+
+    </script>
    <?php
+   
 
         // Récupérons l'image par défaut dans la base de données
+
+        $presencePseudo = "";
+        $resultatPseudoChemin = ""; // Variable permettant de récupérer le pseudo et le chemin depuis la base de données
+        $CheminDataBase ; // Variable permettant de récupérer le chemin de la photo depuis la base de données
+        $pseudoDataBase ; // Variable permettant de récupérer le pseudo depuis la base de données
 
 
         if( isset($_POST['pseudo']) && isset($_POST['send'])){
@@ -53,25 +65,63 @@
             $resultatSauvegarde = "" ; // On définit une variable qui va confirmer ou infirmer la sauvegarde des données ;
             $pseudobdd = $_POST['pseudo']; // On récupère le pseudo du formulaire dans une autre nouvelle variable
 
-            $requetteSauvegardePseudoPhoto = $connectionDatabase -> prepare('INSERT INTO profile(pseudo,photo) VALUE (:pseudoo, :photoo)'); // Insertion des informations dans la bdd à travers la requette
-            
-            if($requetteSauvegardePseudoPhoto -> execute(array(
-                'pseudoo' => $pseudobdd,
-                'photoo' => $cheminDefinitif
-            ))){
+            /* ******* Maintenant, nous allons interdire à deux utilisateurs d'utiliser un meme pseudo ******* */
 
-                move_uploaded_file( $cheminTemporaire,$cheminDefinitif); // Sauvegarde du fichier sur le serveur
-                
-                $resultatSauvegarde = " Informations enregistrées avec succès !";
+            // Ainsi, nous vérifions si le pseudo entré par l'utilisateur existe déjà dans le base de données
+
+            $requetteVerificationPseudo = $connectionDatabase -> prepare('SELECT * FROM profile WHERE pseudo = :pseud');
+            $requetteVerificationPseudo -> execute(array(
+                'pseud' => $pseudobdd
+            ));
+
+            $resultatVerificationPseudo = $requetteVerificationPseudo->fetch();
+
+            if($resultatVerificationPseudo){ ?> 
+                <script>
+                    presencePseudoJS = true ;
+                </script>
+            <?php
+                $presencePseudo = "$pseudo est déjà utilisé, veuillez choisir un autre pseudo";
+            }else{
+
+                $requetteSauvegardePseudoPhoto = $connectionDatabase -> prepare('INSERT INTO profile(pseudo,photo) VALUE (:pseudoo, :photoo)'); // Insertion des informations dans la bdd à travers la requette
+            
+                if($requetteSauvegardePseudoPhoto -> execute(array(
+                    'pseudoo' => $pseudobdd,
+                    'photoo' => $cheminDefinitif
+                ))){ ?> 
+                <script>
+                    resultatSauvegardeJS = true ;
+                </script>
+
+                <?php
+    
+                    move_uploaded_file( $cheminTemporaire,$cheminDefinitif); // Sauvegarde du fichier sur le serveur
+                    
+                    $resultatSauvegarde = " Informations enregistrées avec succès !";
+    
+                }
+                else{
+                    $resultatSauvegarde = "Une erreur s'est produite lors de la sauvegarde des donées !";
+                }
+             
 
             }
-            else{
-                $resultatSauvegarde = "Une erreur s'est produite lors de la sauvegarde des donées !";
-            }
-            
-            
-            //$fichier = $_FILES['monfichier']['name'];
-            //echo($fichier);
+
+
+
+            /******* Récupération du pseudo de du chemin de la photo depuis la base de données  *********/
+
+            $requetteRecuperationPseudoPhoto = $connectionDatabase -> prepare('SELECT pseudo, photo FROM profile WHERE pseudo = :pseudoR');
+
+            $requetteRecuperationPseudoPhoto -> execute(array(
+                'pseudoR' => $pseudo
+            ));
+
+            $resultatPseudoChemin = $requetteRecuperationPseudoPhoto -> fetch();
+            $pseudoDataBase = $resultatPseudoChemin['pseudo'];
+            $CheminDataBase = $resultatPseudoChemin['photo'];
+            //echo $resultatPseudoChemin['photo'];
 
 
         }
@@ -90,6 +140,7 @@
     <title>Formulaire</title>
 </head>
 <body>
+
     <div class="main-content">
         <!-- Confirmation ou infirmation de la sauvegarde des informations dans la base données -->
         <p class="confirmation-bdd" id="confirmationBdd">
@@ -99,15 +150,41 @@
                         echo $resultatSauvegarde ; ?>
                         <script>
                             // Gestion de la petite barre de notification
-                            let afficheConfirmation = document.getElementById("confirmationBdd");
-                            afficheConfirmation.style.display = "block";
+                            if(resultatSauvegardeJS == true){
+                                document.getElementById("confirmationBdd").style.display = "block";
 
-                            setTimeout(function(){
-                                afficheConfirmation.style.display = "none";
-                            }, 3000) ;
+                                setTimeout(function(){
+                                    document.getElementById("confirmationBdd").style.display = "none";
+                                }, 4200) ;
+                            }
+
+                            //alert(resultatSauvegardeJS);
+                        </script>
+                        
+
+                   <?php
+
+                   }
+
+                   if(isset($presencePseudo)){
+                        echo($presencePseudo); ?>
+                        <script>
+                            if(presencePseudoJS == true){
+                                //document.getElementById("afficherpseudo").innerHTML = "Username";
+                                //alert("Pseudo deja utilisé");
+                                document.getElementById("confirmationBdd").style.display = "block";
+                                document.getElementById("confirmationBdd").style.backgroundColor = "red";
+                                setTimeout(function(){
+                                    document.getElementById("confirmationBdd").style.display = "none";
+                                }, 4300) ;
+
+                               
+
+                            }
                         </script>
 
-                   <?php }
+                   <?php 
+                        }
                 
                 ?>
             </strong>
@@ -115,8 +192,8 @@
        <div class="profil">
             <p class="imageProfil">
                 <img id="firstImage" class="main-imageProfil" src="<?php
-                if(isset($cheminDefinitif)){
-                    echo ($cheminDefinitif);
+                if(isset($CheminDataBase)){
+                    echo ($CheminDataBase);
                 }else{
                     echo ("ImageDefaut/iconDefault.png");
                 } ?>" alt="">
@@ -124,14 +201,18 @@
             </p>
 
             <p class="name" id="afficherpseudo">
-                <?php if(isset($_POST['pseudo'])){
-                    echo $_POST['pseudo'] ;
-                }?>
+                <?php 
+                    if(isset($pseudoDataBase)){
+                        echo ($pseudoDataBase);
+                    }else{ 
+                        echo ("Username");
+                    }
+                ?>
             </p>
 
             <form action="index.php" method="POST" enctype="multipart/form-data">
                 <div class="pseudo-photo">
-                    <input type="text" name="pseudo" required placeholder="Entrez votre pseudo" autocomplete="off">
+                    <input type="text" name="pseudo" required placeholder="Entrez votre pseudo" autocomplete="off" autofocus>
                     <label title="Choisir une photo" for="camera"><i class="fa-solid fa-camera" id="image"></i></label>
 
                 </div>
@@ -143,6 +224,13 @@
     </div>
 
     <script src="Js/pictureSelected.js"></script>
+
+    <script>
+     /*   if(presencePseudoJS == true){
+            document.getElementById("afficherpseudo").innerHTML= "Username";
+            //alert("hello");
+        } */
+    </script>
 
 </body>
 </html>

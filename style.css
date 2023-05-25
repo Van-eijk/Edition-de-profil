@@ -22,9 +22,10 @@ html{
     top: 10px;
     left: 40%;
     height: 20px;
-    padding: 5px;
+    padding: 10px 10px;
     border-radius: 5px;
     display: none;
+    /*margin: auto;*/
 }
 .profil{
     border: 1px solid orangered;

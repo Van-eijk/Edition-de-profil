@@ -6,6 +6,17 @@ let inputFile = document.querySelector("input[type=file]").files; // On récupè
 
 function pictureSelected(){
     camera.style.color = "greenyellow";
+
+    document.getElementById("confirmationBdd").style.display = "block";
+    document.getElementById("confirmationBdd").style.backgroundColor = "greenyellow";
+
+    document.getElementById("confirmationBdd").innerHTML = "Photo sélectionnée";
+
+    setTimeout(function(){
+        document.getElementById("confirmationBdd").style.display = "none";
+    }, 3000) ;
+
+
    /* firstImage.style.display = "none";
     secondImage.style.display = "block";
 
